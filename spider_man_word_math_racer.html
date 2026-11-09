@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spider-Racer: Hero Speed & Quiz Challenge</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Orbitron & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Tone.js for SFX -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        spidey: {
+                            red: '#E62429',
+                            darkRed: '#B71C1C',
+                            blue: '#0055A5',
+                            darkBlue: '#0A192F',
+                            cyan: '#00F0FF',
+                            gold: '#FFD700',
+                            darkBg: '#090B10',
+                            cardBg: '#121824'
+                        }
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #090B10;
+            color: #FFFFFF;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(230, 36, 41, 0.1) 0%, transparent 60%),
+                radial-gradient(circle at 10% 20%, rgba(0, 85, 165, 0.15) 0%, transparent 50%);
+        }
+
+        .web-bg {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .glow-red { box-shadow: 0 0 20px rgba(230, 36, 41, 0.6); }
+        .glow-blue { box-shadow: 0 0 20px rgba(0, 85, 165, 0.6); }
+        .glow-cyan { box-shadow: 0 0 15px rgba(0, 240, 255, 0.5); }
+        
+        .spidey-anim {
+            animation: spideySwing 1.2s ease-in-out infinite;
+        }
+
+        @keyframes spideySwing {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(-3deg); }
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #090B10; }
+        ::-webkit-scrollbar-thumb { background: #E62429; border-radius: 4px; }
+    </style>
+</head>
+<body class="web-bg min-h-screen flex flex-col justify-between selection:bg-spidey-red selection:text-white">
+
+    <!-- TOP HEADER / NAVBAR -->
+    <header class="border-b border-red-900/40 bg-spidey-darkBg/90 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('menu')">
+                <div class="w-10 h-10 rounded-full bg-spidey-red flex items-center justify-center glow-red border border-red-400">
+                    <i class="fa-solid fa-spider text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-orbitron font-black text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-red-400 to-blue-400">
+                        SPIDER-RACER
+                    </h1>
+                    <p class="text-xs text-gray-400 tracking-widest font-mono">MULTIPLAYER QUIZ & RACER</p>
+                </div>
+            </div>
+
+            <!-- Stats & Action Buttons -->
+            <div class="flex items-center space-x-3">
+                <button id="sfx-toggle-btn" onclick="toggleSFX()" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-3 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 border border-gray-700 transition">
+                    <i id="sfx-icon" class="fa-solid fa-volume-high text-spidey-cyan"></i>
+                    <span id="sfx-label" class="hidden sm:inline">SFX: ON</span>
+                </button>
+                <button onclick="switchView('materi')" class="bg-spidey-blue hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg transition glow-blue border border-blue-400">
+                    <i class="fa-solid fa-folder-plus"></i>
+                    <span>Kelola Materi</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+
+        <!-- ================= MAIN MENU VIEW ================= -->
+        <section id="view-menu" class="space-y-8 animate-fade-in">
+            <!-- Hero Banner -->
+            <div class="relative rounded-3xl bg-gradient-to-r from-red-950/80 via-spidey-cardBg to-blue-950/80 p-8 border border-red-500/30 overflow-hidden shadow-2xl">
+                <div class="absolute -right-10 -bottom-10 opacity-15 pointer-events-none">
+                    <i class="fa-solid fa-spider text-[260px] text-red-500"></i>
+                </div>
+                
+                <div class="relative z-10 max-w-2xl space-y-4">
+                    <span class="bg-red-500/20 text-red-400 border border-red-500/40 text-xs px-3 py-1 rounded-full font-mono uppercase tracking-widest font-semibold">
+                        Ready To Race?
+                    </span>
+                    <h2 class="font-orbitron font-extrabold text-3xl sm:text-5xl text-white leading-tight">
+                        BALAPAN MULTIPLAYER & SOAL INFORMATIKA!
+                    </h2>
+                    <p class="text-gray-300 text-sm sm:text-base leading-relaxed">
+                        Uji pengetahuan Hardware & Software komputer dari materi lengkap (50 Soal) atau adu cepat mengetik bersama teman secara Multiplayer Real-time!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Mode Selection Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Mode 1: SOAL INFORMATIKA (SOAL.txt) -->
+                <div class="bg-spidey-cardBg rounded-2xl p-6 border border-gray-800 hover:border-red-500/60 transition group hover:-translate-y-1 shadow-lg flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-red-600/20 text-spidey-red flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition border border-red-500/30">
+                            <i class="fa-solid fa-microchip"></i>
+                        </div>
+                        <h3 class="font-orbitron font-bold text-lg text-white mb-2">Soal Informatika</h3>
+                        <p class="text-gray-400 text-xs mb-4">50 Soal Komputer (Hardware, Software, OS, Memory). Pilih A, B, C, D untuk melaju!</p>
+                    </div>
+                    <button onclick="startRace('soal_txt')" class="w-full py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold rounded-xl shadow-md transition font-orbitron text-sm flex items-center justify-center gap-2 glow-red">
+                        <i class="fa-solid fa-play"></i> MAIN SOAL (SOLO)
+                    </button>
+                </div>
+
+                <!-- Mode 2: Multiplayer Mode -->
+                <div class="bg-spidey-cardBg rounded-2xl p-6 border border-cyan-500/40 hover:border-cyan-400 transition group hover:-translate-y-1 shadow-lg flex flex-col justify-between relative overflow-hidden">
+                    <span class="absolute top-2 right-2 bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">ONLINE</span>
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-cyan-600/20 text-spidey-cyan flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition border border-cyan-500/30">
+                            <i class="fa-solid fa-users text-spidey-cyan"></i>
+                        </div>
+                        <h3 class="font-orbitron font-bold text-lg text-white mb-2">Multiplayer Race</h3>
+                        <p class="text-gray-400 text-xs mb-4">Buat / Gabung Room Balapan Real-time lawan teman dengan kode 6-digit!</p>
+                    </div>
+                    <button onclick="switchView('lobby')" class="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-xl shadow-md transition font-orbitron text-sm flex items-center justify-center gap-2 glow-cyan">
+                        <i class="fa-solid fa-globe"></i> LOBBY MULTIPLAYER
+                    </button>
+                </div>
+
+                <!-- Mode 3: Word Racer -->
+                <div class="bg-spidey-cardBg rounded-2xl p-6 border border-gray-800 hover:border-blue-500/60 transition group hover:-translate-y-1 shadow-lg flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition border border-blue-500/30">
+                            <i class="fa-solid fa-keyboard"></i>
+                        </div>
+                        <h3 class="font-orbitron font-bold text-lg text-white mb-2">Word Racer</h3>
+                        <p class="text-gray-400 text-xs mb-4">Ketik cepat istilah Spider-Man & Superhero untuk meluncurkan jaring laba-laba.</p>
+                    </div>
+                    <button onclick="startRace('words')" class="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-md transition font-orbitron text-sm flex items-center justify-center gap-2 glow-blue">
+                        <i class="fa-solid fa-play"></i> MAIN WORD RACER
+                    </button>
+                </div>
+
+                <!-- Mode 4: Math Racer -->
+                <div class="bg-spidey-cardBg rounded-2xl p-6 border border-gray-800 hover:border-yellow-500/60 transition group hover:-translate-y-1 shadow-lg flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-yellow-500/20 text-yellow-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition border border-yellow-500/30">
+                            <i class="fa-solid fa-calculator"></i>
+                        </div>
+                        <h3 class="font-orbitron font-bold text-lg text-white mb-2">Math Racer</h3>
+                        <p class="text-gray-400 text-xs mb-4">Hitung cepat operasi matematika dasar (+, -, x) untuk meningkatkan kecepatan balap.</p>
+                    </div>
+                    <button onclick="startRace('math')" class="w-full py-3 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-gray-950 font-black rounded-xl shadow-md transition font-orbitron text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-play"></i> MAIN MATH RACER
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= MULTIPLAYER LOBBY VIEW ================= -->
+        <section id="view-lobby" class="hidden max-w-2xl mx-auto space-y-6">
+            <div class="bg-spidey-cardBg rounded-3xl p-8 border border-cyan-500/30 shadow-2xl space-y-6">
+                <div class="text-center space-y-2">
+                    <div class="w-16 h-16 rounded-2xl bg-cyan-500/20 text-spidey-cyan flex items-center justify-center text-3xl mx-auto border border-cyan-500/40 glow-cyan">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <h2 class="font-orbitron font-black text-2xl text-white">LOBBY MULTIPLAYER</h2>
+                    <p class="text-xs text-gray-400">Main bareng teman menggunakan 50 Soal Komputer & Informatika!</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-300 block mb-1">NAMA PLAYER / HERO</label>
+                        <input type="text" id="multiplayer-name" placeholder="Contoh: SpideyQueens" class="w-full px-4 py-3 bg-gray-950 border border-gray-700 rounded-xl text-white font-bold focus:border-cyan-400 focus:outline-none">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                        <!-- Create Room -->
+                        <div class="bg-gray-950 p-4 rounded-2xl border border-gray-800 space-y-3">
+                            <h4 class="font-orbitron font-bold text-sm text-spidey-cyan">BUAT ROOM BARU</h4>
+                            <p class="text-[11px] text-gray-400">Buat room balapan baru dan bagikan kode 6-digit ke temanmu.</p>
+                            <button onclick="createMultiplayerRoom()" class="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl text-xs font-orbitron transition glow-cyan">
+                                <i class="fa-solid fa-plus mr-1"></i> BUAT ROOM
+                            </button>
+                        </div>
+
+                        <!-- Join Room -->
+                        <div class="bg-gray-950 p-4 rounded-2xl border border-gray-800 space-y-3">
+                            <h4 class="font-orbitron font-bold text-sm text-yellow-400">GABUNG ROOM</h4>
+                            <input type="text" id="room-code-input" placeholder="KODE ROOM (6 Daz-Digit)" uppercase class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-xl text-white text-xs font-mono text-center tracking-widest focus:border-yellow-400 focus:outline-none">
+                            <button onclick="joinMultiplayerRoom()" class="w-full py-2.5 bg-yellow-500 hover:bg-yellow-400 text-gray-950 font-black rounded-xl text-xs font-orbitron transition">
+                                <i class="fa-solid fa-right-to-bracket mr-1"></i> GABUNG ROOM
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-4 border-t border-gray-800">
+                    <button onclick="switchView('menu')" class="text-gray-400 hover:text-white text-xs font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-arrow-left"></i> Kembali ke Menu Utama
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= GAMEPLAY / RACE VIEW ================= -->
+        <section id="view-race" class="hidden space-y-6">
+            <!-- Top Dashboard Stats -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="bg-spidey-cardBg rounded-xl p-3 border border-gray-800 text-center">
+                    <span class="text-xs text-gray-400 font-mono block">WAKTU</span>
+                    <span id="race-timer" class="font-orbitron font-black text-2xl text-spidey-cyan">00:00</span>
+                </div>
+                <div class="bg-spidey-cardBg rounded-xl p-3 border border-gray-800 text-center">
+                    <span class="text-xs text-gray-400 font-mono block">SKOR</span>
+                    <span id="race-score" class="font-orbitron font-black text-2xl text-yellow-400">0</span>
+                </div>
+                <div class="bg-spidey-cardBg rounded-xl p-3 border border-gray-800 text-center">
+                    <span class="text-xs text-gray-400 font-mono block">AKURASI</span>
+                    <span id="race-accuracy" class="font-orbitron font-black text-2xl text-green-400">100%</span>
+                </div>
+                <div class="bg-spidey-cardBg rounded-xl p-3 border border-gray-800 text-center">
+                    <span class="text-xs text-gray-400 font-mono block">MODE</span>
+                    <span id="race-mode-badge" class="font-orbitron font-bold text-sm text-spidey-red block truncate">SOLO</span>
+                </div>
+            </div>
+
+            <!-- Room Info Bar (Multiplayer only) -->
+            <div id="multiplayer-room-bar" class="hidden bg-cyan-950/40 border border-cyan-500/30 rounded-xl p-3 flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <span class="text-xs font-mono text-cyan-300">KODE ROOM: <strong id="display-room-code" class="text-white font-black font-orbitron tracking-widest text-base">------</strong></span>
+                </div>
+                <span id="mp-status-badge" class="text-xs font-mono bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-full border border-cyan-500/40">MENUNGGU PEMAIN...</span>
+            </div>
+
+            <!-- ANIMATED TRACK AREA -->
+            <div class="relative bg-gradient-to-b from-gray-950 via-slate-900 to-spidey-cardBg rounded-2xl p-4 sm:p-6 border-2 border-red-600/40 shadow-2xl overflow-hidden min-h-[280px]">
+                <!-- City Background Silhouette -->
+                <div class="absolute inset-0 opacity-20 pointer-events-none flex justify-between items-end px-4">
+                    <i class="fa-solid fa-city text-9xl text-blue-500"></i>
+                    <i class="fa-solid fa-building text-8xl text-red-500"></i>
+                    <i class="fa-solid fa-city text-9xl text-indigo-500"></i>
+                </div>
+
+                <!-- Race Tracks Container -->
+                <div class="relative z-10 space-y-6 my-4">
+                    <!-- Player Track (Spider-Man / P1) -->
+                    <div class="relative">
+                        <div class="flex justify-between text-xs font-mono text-gray-400 mb-1">
+                            <span class="text-spidey-red font-bold flex items-center gap-1" id="p1-label">
+                                <i class="fa-solid fa-spider"></i> SPIDER-MAN (KAMU)
+                            </span>
+                            <span id="player-progress-text">0%</span>
+                        </div>
+                        <div class="h-10 bg-gray-900/90 rounded-full border border-red-500/30 relative overflow-hidden flex items-center px-2">
+                            <div class="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-red-800 to-spidey-red rounded-full transition-all duration-300" id="player-progress-bar" style="width: 5%;"></div>
+                            <div id="player-avatar" class="absolute transition-all duration-300 flex items-center -ml-4 spidey-anim" style="left: 5%;">
+                                <div class="w-9 h-9 rounded-full bg-spidey-red text-white flex items-center justify-center border-2 border-yellow-400 shadow-lg glow-red">
+                                    <i class="fa-solid fa-spider text-lg"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enemy Track (Venom Bot / Player 2) -->
+                    <div class="relative">
+                        <div class="flex justify-between text-xs font-mono text-gray-400 mb-1">
+                            <span class="text-purple-400 font-bold flex items-center gap-1" id="p2-label">
+                                <i class="fa-solid fa-mask"></i> RIVAL (VENOM BOT)
+                            </span>
+                            <span id="bot-progress-text">0%</span>
+                        </div>
+                        <div class="h-10 bg-gray-900/90 rounded-full border border-purple-500/30 relative overflow-hidden flex items-center px-2">
+                            <div class="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-purple-900 to-purple-600 rounded-full transition-all duration-300" id="bot-progress-bar" style="width: 5%;"></div>
+                            <div id="bot-avatar" class="absolute transition-all duration-300 flex items-center -ml-4" style="left: 5%;">
+                                <div class="w-9 h-9 rounded-full bg-purple-950 text-purple-300 flex items-center justify-center border-2 border-purple-500 shadow-lg">
+                                    <i class="fa-solid fa-skull text-lg"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Finish Line Indicator -->
+                <div class="absolute right-4 top-0 bottom-0 w-8 border-l-2 border-dashed border-yellow-400/60 flex flex-col justify-around items-center opacity-80 pointer-events-none">
+                    <i class="fa-solid fa-flag-checkered text-yellow-400 text-xl"></i>
+                    <i class="fa-solid fa-flag-checkered text-yellow-400 text-xl"></i>
+                </div>
+            </div>
+
+            <!-- QUESTION & ANSWER AREA -->
+            <div class="bg-spidey-cardBg rounded-2xl p-6 border border-gray-800 shadow-xl text-center space-y-6">
+                <!-- Question Display -->
+                <div class="space-y-2">
+                    <span id="question-category" class="text-xs font-mono text-spidey-cyan uppercase tracking-widest bg-cyan-950/50 px-3 py-1 rounded-full border border-cyan-800">
+                        MODE: INFORMATIKA
+                    </span>
+                    <div id="question-display" class="font-orbitron font-bold text-lg sm:text-2xl text-white leading-relaxed py-2 min-h-[70px] flex items-center justify-center px-4">
+                        READY...
+                    </div>
+                </div>
+
+                <!-- Answer Input Area (Dynamic: Text input for words/math, Multiple Choice Options for SOAL.txt) -->
+                <div class="max-w-2xl mx-auto space-y-4">
+                    <!-- Text Answer Input -->
+                    <div id="text-input-container" class="relative">
+                        <input type="text" id="answer-input" autocomplete="off" placeholder="Ketik jawaban di sini lalu tekan Enter..."
+                            class="w-full px-6 py-4 bg-gray-950 border-2 border-gray-700 rounded-2xl text-xl sm:text-2xl font-bold text-white placeholder-gray-500 focus:outline-none focus:border-spidey-red focus:ring-4 focus:ring-red-900/40 transition text-center">
+                        <button id="submit-btn" onclick="checkAnswer()" class="absolute right-2 top-2 bottom-2 px-6 bg-spidey-red hover:bg-red-600 text-white font-bold rounded-xl transition font-orbitron">
+                            KIRIM
+                        </button>
+                    </div>
+
+                    <!-- Multiple Choice Options (A, B, C, D) for SOAL.txt -->
+                    <div id="mc-options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 hidden">
+                        <button onclick="checkMultipleChoice('A')" id="opt-A" class="p-4 bg-gray-950 hover:bg-gray-800 border-2 border-gray-800 hover:border-spidey-red rounded-xl text-left transition flex items-center gap-3 group">
+                            <span class="w-8 h-8 rounded-lg bg-red-600/20 text-spidey-red font-bold font-orbitron flex items-center justify-center group-hover:bg-spidey-red group-hover:text-white transition">A</span>
+                            <span id="opt-text-A" class="text-sm font-semibold text-gray-200">Option A</span>
+                        </button>
+                        <button onclick="checkMultipleChoice('B')" id="opt-B" class="p-4 bg-gray-950 hover:bg-gray-800 border-2 border-gray-800 hover:border-spidey-red rounded-xl text-left transition flex items-center gap-3 group">
+                            <span class="w-8 h-8 rounded-lg bg-red-600/20 text-spidey-red font-bold font-orbitron flex items-center justify-center group-hover:bg-spidey-red group-hover:text-white transition">B</span>
+                            <span id="opt-text-B" class="text-sm font-semibold text-gray-200">Option B</span>
+                        </button>
+                        <button onclick="checkMultipleChoice('C')" id="opt-C" class="p-4 bg-gray-950 hover:bg-gray-800 border-2 border-gray-800 hover:border-spidey-red rounded-xl text-left transition flex items-center gap-3 group">
+                            <span class="w-8 h-8 rounded-lg bg-red-600/20 text-spidey-red font-bold font-orbitron flex items-center justify-center group-hover:bg-spidey-red group-hover:text-white transition">C</span>
+                            <span id="opt-text-C" class="text-sm font-semibold text-gray-200">Option C</span>
+                        </button>
+                        <button onclick="checkMultipleChoice('D')" id="opt-D" class="p-4 bg-gray-950 hover:bg-gray-800 border-2 border-gray-800 hover:border-spidey-red rounded-xl text-left transition flex items-center gap-3 group">
+                            <span class="w-8 h-8 rounded-lg bg-red-600/20 text-spidey-red font-bold font-orbitron flex items-center justify-center group-hover:bg-spidey-red group-hover:text-white transition">D</span>
+                            <span id="opt-text-D" class="text-sm font-semibold text-gray-200">Option D</span>
+                        </button>
+                    </div>
+
+                    <!-- Dynamic Feedback Message -->
+                    <div id="feedback-msg" class="h-6 text-sm font-semibold transition-all"></div>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center">
+                <button onclick="leaveRace()" class="text-gray-400 hover:text-white text-sm font-semibold flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Keluar ke Menu
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= MATERI MANAGER VIEW ================= -->
+        <section id="view-materi" class="hidden space-y-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-800 pb-4">
+                <div>
+                    <h2 class="font-orbitron font-bold text-2xl text-white">Kelola Bank Soal & Materi</h2>
+                    <p class="text-gray-400 text-sm">50 Soal Komputer telah dimuat secara otomatis! Kamu juga bisa menambah materi baru.</p>
+                </div>
+                <button onclick="switchView('menu')" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-4 py-2 rounded-xl text-sm font-semibold transition self-start sm:self-auto">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Kembali ke Menu
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Form Input Single / Manual -->
+                <div class="bg-spidey-cardBg rounded-2xl p-6 border border-gray-800 space-y-4 shadow-lg">
+                    <h3 class="font-orbitron font-bold text-lg text-spidey-red flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square"></i> Tambah Kata / Soal Manual
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-xs font-semibold text-gray-300 block mb-1">Kata / Pertanyaan</label>
+                            <input type="text" id="new-word-input" placeholder="Contoh: Perangkat keras masukan data?" class="w-full px-4 py-2 bg-gray-950 border border-gray-700 rounded-xl text-white text-sm focus:border-spidey-red focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-gray-300 block mb-1">Jawaban Kunci</label>
+                            <input type="text" id="new-answer-input" placeholder="Contoh: B atau Input device" class="w-full px-4 py-2 bg-gray-950 border border-gray-700 rounded-xl text-white text-sm focus:border-spidey-red focus:outline-none">
+                        </div>
+                        <button onclick="addSingleWord()" class="w-full py-2.5 bg-spidey-red hover:bg-red-600 text-white font-bold rounded-xl text-sm transition font-orbitron">
+                            <i class="fa-solid fa-plus mr-1"></i> TAMBAH MATERI
+                        </button>
+                    </div>
+
+                    <hr class="border-gray-800 my-4">
+
+                    <!-- Import from File / Text -->
+                    <h3 class="font-orbitron font-bold text-lg text-spidey-blue flex items-center gap-2 pt-2">
+                        <i class="fa-solid fa-file-arrow-up"></i> Impor dari File (.TXT)
+                    </h3>
+                    <div class="space-y-3">
+                        <p class="text-xs text-gray-400">Unggah file .txt berisi pertanyaan tambahan.</p>
+                        <input type="file" id="file-input" accept=".txt,.csv" class="hidden" onchange="handleFileUpload(event)">
+                        <button onclick="document.getElementById('file-input').click()" class="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-xl text-sm border border-gray-700 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-upload"></i> Pilih File (.TXT)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Display Custom Word List -->
+                <div class="lg:col-span-2 bg-spidey-cardBg rounded-2xl p-6 border border-gray-800 space-y-4 shadow-lg">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-orbitron font-bold text-lg text-white flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-yellow-400"></i> Daftar Soal Informatika & Materi (<span id="custom-count">0</span>)
+                        </h3>
+                    </div>
+
+                    <div class="max-h-[420px] overflow-y-auto pr-2 space-y-2" id="custom-word-list">
+                        <!-- Items rendered via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= MODAL RESULT / GAME OVER ================= -->
+        <div id="result-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-spidey-cardBg border-2 border-red-500/50 rounded-3xl p-8 max-w-md w-full text-center space-y-6 glow-red animate-scale-up">
+                <div id="modal-icon" class="w-20 h-20 rounded-full mx-auto flex items-center justify-center text-4xl shadow-xl">
+                    <!-- Icon JS -->
+                </div>
+
+                <div class="space-y-2">
+                    <h3 id="modal-title" class="font-orbitron font-black text-3xl text-white">VICTORY!</h3>
+                    <p id="modal-desc" class="text-gray-300 text-sm">Spider-Man berhasil menyalip rival dan mencatatkan waktu terbaik!</p>
+                </div>
+
+                <div class="bg-gray-950 p-4 rounded-2xl grid grid-cols-2 gap-3 border border-gray-800 text-left">
+                    <div>
+                        <span class="text-xs text-gray-500 block font-mono">TOTAL SKOR</span>
+                        <span id="modal-score" class="font-orbitron font-bold text-xl text-yellow-400">0</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-gray-500 block font-mono">AKURASI</span>
+                        <span id="modal-acc" class="font-orbitron font-bold text-xl text-green-400">0%</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-gray-500 block font-mono">WAKTU</span>
+                        <span id="modal-time" class="font-orbitron font-bold text-xl text-spidey-cyan">0s</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-gray-500 block font-mono">BEST STREAK</span>
+                        <span id="modal-streak" class="font-orbitron font-bold text-xl text-spidey-red">0x</span>
+                    </div>
+                </div>
+
+                <div class="flex space-x-3">
+                    <button onclick="closeModal(); restartGame();" class="flex-1 py-3 bg-spidey-red hover:bg-red-600 text-white font-bold rounded-xl transition font-orbitron glow-red">
+                        MAIN LAGI
+                    </button>
+                    <button onclick="closeModal(); switchView('menu');" class="flex-1 py-3 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold rounded-xl transition font-orbitron border border-gray-700">
+                        MENU
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-gray-900 bg-spidey-darkBg/80 py-4 text-center text-xs text-gray-500 font-mono">
+        Spider-Racer Edition &bull; 50 Soal Informatika & Multiplayer Mode
+    </footer>
+
+    <!-- FIREBASE MODULE & GAME SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // App ID & Firebase Config setup
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'spider-racer-default';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "demo-key",
+            authDomain: "demo.firebaseapp.com",
+            projectId: "demo-project",
+            storageBucket: "demo.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+        let roomUnsubscribe = null;
+        let currentRoomId = null;
+        let isHost = false;
+
+        // Sign in Auth Init
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (e) {
+                console.warn("Firebase auth warning (Local fallback mode):", e);
+            }
+        }
+        initAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+        });
+
+        // ================= 50 SOAL INFORMATIKA DATA (SOAL.txt) =================
+        const soalInformatikaBank = [
+            { id: 1, question: "1. Alat yang digunakan untuk memasukkan data berupa teks, angka, dan perintah ke dalam komputer disebut...", options: { A: "Output device", B: "Input device", C: "Processing device", D: "Storage device" }, answer: "B" },
+            { id: 2, question: "2. Manakah di bawah ini yang termasuk ke dalam contoh perangkat keras keluaran (output device)?", options: { A: "Keyboard", B: "Mouse", C: "Monitor", D: "Scanner" }, answer: "C" },
+            { id: 3, question: "3. Otak dari sebuah komputer yang berfungsi untuk memproses semua instruksi dan data adalah...", options: { A: "RAM", B: "Harddisk", C: "CPU", D: "Power Supply" }, answer: "C" },
+            { id: 4, question: "4. Memori komputer yang bersifat sementara dan akan hilang datanya jika komputer dimatikan (volatile) adalah...", options: { A: "ROM", B: "RAM", C: "Harddisk", D: "Flashdisk" }, answer: "B" },
+            { id: 5, question: "5. Perangkat penyimpanan data sekunder yang menggunakan piringan magnetik berputar berkecepatan tinggi adalah...", options: { A: "SSD", B: "Harddisk Drive (HDD)", C: "RAM", D: "ROM" }, answer: "B" },
+            { id: 6, question: "6. Apa fungsi utama dari kartu grafis atau GPU pada komputer?", options: { A: "Menyimpan dokumen teks", B: "Memproses data tampilan dan grafis", C: "Menyediakan daya listrik", D: "Menghubungkan ke internet" }, answer: "B" },
+            { id: 7, question: "7. Papan induk utama tempat semua komponen hardware utama seperti CPU, RAM, dan kartu ekspansi terhubung disebut...", options: { A: "Motherboard", B: "Harddisk", C: "Power Supply", D: "Casing" }, answer: "A" },
+            { id: 8, question: "8. Alat yang berfungsi untuk mencetak dokumen atau gambar dari komputer ke atas kertas adalah...", options: { A: "Scanner", B: "Printer", C: "Plotter", D: "Monitor" }, answer: "B" },
+            { id: 9, question: "9. Perangkat keras yang berfungsi untuk mengubah dokumen fisik menjadi bentuk digital adalah...", options: { A: "Printer", B: "Scanner", C: "Projector", D: "Webcam" }, answer: "B" },
+            { id: 10, question: "10. Komponen yang berfungsi menyuplai arus listrik ke seluruh komponen di dalam casing komputer adalah...", options: { A: "CPU", B: "Motherboard", C: "Power Supply Unit (PSU)", D: "Heatsink" }, answer: "C" },
+            { id: 11, question: "11. Jenis memori baca-saja yang isinya tidak hilang meskipun komputer dimatikan dan berisi program BIOS adalah...", options: { A: "RAM", B: "ROM", C: "Cache", D: "Flash Memory" }, answer: "B" },
+            { id: 12, question: "12. Perangkat penyimpanan berbasis chip flash memory yang tidak memiliki komponen bergerak dan bekerja lebih cepat dari HDD adalah...", options: { A: "Solid State Drive (SSD)", B: "CD-ROM", C: "Disket", D: "DVD-RAM" }, answer: "A" },
+            { id: 13, question: "13. Perangkat keras output yang berfungsi mengubah sinyal digital menjadi gelombang suara adalah...", options: { A: "Microphone", B: "Speaker", C: "Webcam", D: "Sensor" }, answer: "B" },
+            { id: 14, question: "14. Pendingin yang biasanya diletakkan di atas prosesor (CPU) untuk mencegah panas berlebih adalah...", options: { A: "Power Supply", B: "Fan dan Heatsink", C: "VGA Card", D: "Sound Card" }, answer: "B" },
+            { id: 15, question: "15. Perangkat apa yang paling tepat digunakan untuk bermain game simulasi penerbangan atau balap mobil secara interaktif?", options: { A: "Barcode Scanner", B: "Trackball", C: "Joystick atau Gamepad", D: "Touchpad" }, answer: "C" },
+            { id: 16, question: "16. Apa kepanjangan dari singkatan CPU dalam arsitektur komputer?", options: { A: "Control Processing Unit", B: "Central Processing Unit", C: "Computer Personal Unit", D: "Central Power Unit" }, answer: "B" },
+            { id: 17, question: "17. Komponen internal CPU yang berfungsi melakukan perhitungan aritmatika (matematika) dan logika adalah...", options: { A: "Control Unit (CU)", B: "Arithmetic Logic Unit (ALU)", C: "Register", D: "Memory Unit" }, answer: "B" },
+            { id: 18, question: "18. Perangkat yang digunakan untuk menghubungkan komputer ke jaringan internet melalui kabel LAN adalah...", options: { A: "Sound Card", B: "LAN Card (Network Interface Card)", C: "VGA Card", D: "Capture Card" }, answer: "B" },
+            { id: 19, question: "19. Manakah dari berikut ini yang merupakan contoh perangkat masukan penunjuk (pointing device)?", options: { A: "Keyboard", B: "Mouse", C: "Microphone", D: "Speaker" }, answer: "B" },
+            { id: 20, question: "20. Port yang digunakan untuk transfer data universal dan menghubungkan berbagai periferal eksternal modern adalah...", options: { A: "Port VGA", B: "Port Serial", C: "Port USB (Universal Serial Bus)", D: "Port PS/2" }, answer: "C" },
+            { id: 21, question: "21. Perangkat lunak (software) yang bertindak sebagai jembatan antara pengguna, hardware, dan aplikasi disebut...", options: { A: "Perangkat Lunak Aplikasi", B: "Sistem Operasi", C: "Perangkat Lunak Pemrograman", D: "Utility Software" }, answer: "B" },
+            { id: 22, question: "22. Manakah yang termasuk ke dalam contoh Sistem Operasi berbasis grafis (GUI) untuk komputer pribadi?", options: { A: "Microsoft Word", B: "Microsoft Windows", C: "Google Chrome", D: "Adobe Photoshop" }, answer: "B" },
+            { id: 23, question: "23. Sistem operasi yang bersifat open-source (terbuka) dan banyak dikembangkan oleh komunitas di seluruh dunia adalah...", options: { A: "Windows 11", B: "macOS", C: "Linux", D: "iOS" }, answer: "C" },
+            { id: 24, question: "24. Perangkat lunak aplikasi yang dirancang khusus untuk mengolah kata dan membuat dokumen laporan adalah...", options: { A: "Microsoft Excel", B: "Microsoft Word", C: "Microsoft PowerPoint", D: "Microsoft Access" }, answer: "B" },
+            { id: 25, question: "25. Program yang digunakan untuk menjelajahi halaman web di internet disebut...", options: { A: "Web Browser", B: "Media Player", C: "Antivirus", D: "Database Management System" }, answer: "A" },
+            { id: 26, question: "26. Apa fungsi utama dari perangkat lunak utilitas (utility software) seperti antivirus atau disk cleaner?", options: { A: "Membuat gambar dan desain grafis", B: "Merawat, mengamankan, dan mengoptimalkan sistem komputer", C: "Mengedit file video", D: "Menyusun laporan keuangan" }, answer: "B" },
+            { id: 27, question: "27. Sistem operasi yang paling banyak digunakan pada perangkat smartphone atau telepon genggam saat ini adalah...", options: { A: "Windows Phone", B: "Android", C: "MS-DOS", D: "Ubuntu" }, answer: "B" },
+            { id: 28, question: "28. Perangkat lunak aplikasi yang biasa digunakan untuk membuat presentasi visual yang menarik adalah...", options: { A: "Microsoft PowerPoint", B: "Notepad", C: "Paint", D: "VLC Media Player" }, answer: "A" },
+            { id: 29, question: "29. Manakah di bawah ini yang merupakan contoh program pengolah angka (spreadsheet)?", options: { A: "Microsoft Word", B: "Microsoft Excel", C: "CorelDraw", D: "Adobe Acrobat" }, answer: "B" },
+            { id: 30, question: "30. Perangkat lunak yang berfungsi melindungi komputer dari serangan virus, malware, dan spyware disebut...", options: { A: "Firefall", B: "Antivirus", C: "Driver", D: "Firmware" }, answer: "B" },
+            { id: 31, question: "31. Apa yang dimaksud dengan software open-source?", options: { A: "Perangkat lunak yang harus dibeli lisensinya", B: "Perangkat lunak yang kode sumbernya dibuka dan boleh dimodifikasi serta disebarluaskan", C: "Perangkat lunak berbayar tanpa opsi uji coba", D: "Perangkat lunak rahasia milik instansi pemerintah" }, answer: "B" },
+            { id: 32, question: "32. Perangkat lunak berpemilik (proprietary software) memiliki ciri utama yaitu...", options: { A: "Bebas diubah kode programnya oleh siapa saja", B: "Memiliki hak cipta ketat dan biasanya berbayar dengan kode sumber tertutup", C: "Tidak memerlukan lisensi penggunaan", D: "Selalu gratis selamanya" }, answer: "B" },
+            { id: 33, question: "33. Program kecil yang berfungsi sebagai pengenal dan penghubung antara sistem operasi dengan perangkat keras tambahan disebut...", options: { A: "Application Software", B: "Driver", C: "BIOS", D: "Malware" }, answer: "B" },
+            { id: 34, question: "34. Manakah yang termasuk contoh sistem operasi untuk produk komputer buatan Apple Inc. (Macintosh)?", options: { A: "Linux Mint", B: "macOS", C: "Windows 10", D: "Fedora" }, answer: "B" },
+            { id: 35, question: "35. File instalasi program aplikasi di dalam sistem operasi Windows biasanya memiliki format ekstensi...", options: { A: ".exe", B: ".docx", C: ".mp3", D: ".jpg" }, answer: "A" },
+            { id: 36, question: "36. Jika komputer mengalami lambat dalam merespons karena terlalu banyak aplikasi terbuka di RAM, tindakan perawatan software yang tepat adalah...", options: { A: "Mematikan saklar listrik secara paksa", B: "Membersihkan cache atau menutup aplikasi latar belakang yang tidak perlu", C: "Menghapus semua file sistem operasi", D: "Membongkar cangkang casing komputer" }, answer: "B" },
+            { id: 37, question: "37. Perangkat lunak apa yang digunakan untuk merancang gambar vektor, logo, atau ilustrasi grafis?", options: { A: "CorelDraw", B: "Audacity", C: "WordPad", D: "Windows Media Player" }, answer: "A" },
+            { id: 38, question: "38. Perangkat lunak yang berfungsi menerjemahkan bahasa pemrograman tingkat tinggi ke dalam bahasa mesin agar dapat dieksekusi komputer adalah...", options: { A: "Kompiler (Compiler) / Interpreter", B: "Database", C: "Text Editor", D: "Utility" }, answer: "A" },
+            { id: 39, question: "39. Apa fungsi utama dari BIOS (Basic Input Output System) pada komputer?", options: { A: "Membuat tabel laporan angka", B: "Mengatur dan menginisialisasi perangkat keras saat komputer pertama kali dinyalakan (booting)", C: "Menjelajahi situs jejaring sosial", D: "Mengompres ukuran file video" }, answer: "B" },
+            { id: 40, question: "40. Apa yang dimaksud dengan istilah 'freeware'?", options: { A: "Perangkat lunak yang gratis untuk digunakan selamanya tanpa batasan biaya", B: "Perangkat lunak percobaan selama 30 hari saja", C: "Perangkat lunak ilegal", D: "Perangkat lunak penyebar iklan" }, answer: "A" },
+            { id: 41, question: "41. Perangkat keras yang berfungsi menghubungkan beberapa jaringan komputer berbeda atau ke jaringan internet adalah...", options: { A: "Switch", B: "Router", C: "Hub", D: "Repeater" }, answer: "B" },
+            { id: 42, question: "42. Manakah yang termasuk perangkat penyimpanan portabel berbasis memori flash?", options: { A: "Flashdisk (USB Flash Drive)", B: "Harddisk Internal", C: "CD-R", D: "Floppy Disk" }, answer: "A" },
+            { id: 43, question: "43. Apa perbedaan utama antara memori RAM dan ROM?", options: { A: "RAM bersifat permanen, sedangkan ROM bersifat sementara", B: "RAM bersifat sementara dan bisa diubah, sedangkan ROM bersifat permanen dan berisi data penting pabrik", C: "RAM berkapasitas lebih kecil dibanding ROM", D: "ROM hanya dipakai saat bermain game" }, answer: "B" },
+            { id: 44, question: "44. Perangkat input yang mendeteksi sentuhan jari langsung pada permukaan layar perangkat elektronik disebut...", options: { A: "Touchpad", B: "Touchscreen", C: "Stylus", D: "Digitizer" }, answer: "B" },
+            { id: 45, question: "45. Format file dokumen teks standar yang sering digunakan untuk pertukaran dokumen lintas platform agar tata letaknya tidak berubah adalah...", options: { A: ".txt", B: ".pdf", C: ".png", D: ".exe" }, answer: "B" },
+            { id: 46, question: "46. Ketika komputer gagal menampilkan gambar di layar padahal mesin menyala, komponen hardware manakah yang paling mungkin bermasalah?", options: { A: "Sound Card", B: "Kartu Grafis (GPU/VGA) atau Kabel Monitor", C: "Network Card", D: "Keyboard" }, answer: "B" },
+            { id: 47, question: "47. Manakah dari berikut ini yang merupakan contoh perangkat lunak pengolah gambar raster atau foto digital?", options: { A: "Adobe Photoshop", B: "Microsoft Access", C: "Notepad++", D: "WinRAR" }, answer: "A" },
+            { id: 48, question: "48. Apa fungsi utama dari port HDMI pada komputer atau laptop modern?", options: { A: "Menghubungkan tetikus nirkabel", B: "Mengisi daya baterai laptop saja", C: "Mengirimkan sinyal audio dan video digital berkualitas tinggi ke monitor/proyektor", D: "Mengatur aliran udara fan internal" }, answer: "C" },
+            { id: 49, question: "49. Apa yang dimaksud dengan perangkat lunak berjenis 'shareware'?", options: { A: "Software gratis tanpa batasan waktu", B: "Perangkat lunak yang dapat dicoba secara gratis selama periode waktu atau fitur tertentu sebelum pengguna memutuskan untuk membelinya", C: "Software merusak sistem komputer", D: "Perangkat lunak buatan pemerintah" }, answer: "B" },
+            { id: 50, question: "50. Interaksi antara perangkat keras (hardware) dan perangkat lunak (software) dikoordinasikan secara langsung oleh...", options: { A: "Pengguna (Brainware)", B: "Sistem Operasi (Operating System)", C: "Kabel Data", D: "Antivirus" }, answer: "B" }
+        ];
+
+        // Default word bank
+        const defaultWords = [
+            "Spider-Man", "Peter Parker", "Web Shooter", "Spider Sense", "Wall Crawler",
+            "Queens", "New York", "Daily Bugle", "Uncle Ben", "Aunt May", "Great Power",
+            "Great Responsibility", "Web Slinging", "Green Goblin", "Venom", "Doctor Octopus",
+            "Electro", "Sandman", "Mysterio", "Rhino", "Lizard", "Vulture", "Miles Morales",
+            "Gwen Stacy", "Spider-Gwen", "Iron Spider", "Symbiote", "Multiverse"
+        ];
+
+        let customWordBank = [...soalInformatikaBank];
+
+        // Game State Variables
+        let currentMode = 'soal_txt'; // 'soal_txt', 'multiplayer', 'words', 'math'
+        let currentQuestion = null;
+        let playerProgress = 0;
+        let botProgress = 0;
+        let score = 0;
+        let streak = 0;
+        let maxStreak = 0;
+        let correctAnswers = 0;
+        let totalAttempts = 0;
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let botInterval = null;
+        let isGameActive = false;
+        let sfxEnabled = true;
+        let questionIndex = 0;
+
+        // Tone.js SFX
+        const synth = new Tone.Synth().toDestination();
+        const polySynth = new Tone.PolySynth().toDestination();
+
+        function playSFX(type) {
+            if (!sfxEnabled) return;
+            try {
+                if (Tone.context.state !== 'running') {
+                    Tone.start();
+                }
+                if (type === 'correct') {
+                    synth.triggerAttackRelease("C5", "8n");
+                    setTimeout(() => synth.triggerAttackRelease("E5", "8n"), 80);
+                    setTimeout(() => synth.triggerAttackRelease("G5", "8n"), 160);
+                } else if (type === 'wrong') {
+                    synth.triggerAttackRelease("F3", "4n");
+                } else if (type === 'web') {
+                    const noise = new Tone.NoiseSynth({
+                        noise: { type: 'white' },
+                        envelope: { attack: 0.005, decay: 0.1, sustain: 0 }
+                    }).toDestination();
+                    noise.triggerAttackRelease("16n");
+                } else if (type === 'win') {
+                    polySynth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "4n");
+                } else if (type === 'lose') {
+                    polySynth.triggerAttackRelease(["C3", "Eb3", "G3"], "2n");
+                }
+            } catch (e) {
+                console.log("SFX play suppressed:", e);
+            }
+        }
+
+        window.toggleSFX = function() {
+            sfxEnabled = !sfxEnabled;
+            const label = document.getElementById('sfx-label');
+            const icon = document.getElementById('sfx-icon');
+            if (sfxEnabled) {
+                label.innerText = 'SFX: ON';
+                icon.className = 'fa-solid fa-volume-high text-spidey-cyan';
+                playSFX('correct');
+            } else {
+                label.innerText = 'SFX: OFF';
+                icon.className = 'fa-solid fa-volume-xmark text-gray-500';
+            }
+        }
+
+        // View Switcher
+        window.switchView = function(viewName) {
+            document.getElementById('view-menu').classList.add('hidden');
+            document.getElementById('view-lobby').classList.add('hidden');
+            document.getElementById('view-race').classList.add('hidden');
+            document.getElementById('view-materi').classList.add('hidden');
+
+            if (viewName === 'menu') {
+                document.getElementById('view-menu').classList.remove('hidden');
+                stopRace();
+            } else if (viewName === 'lobby') {
+                document.getElementById('view-lobby').classList.remove('hidden');
+            } else if (viewName === 'race') {
+                document.getElementById('view-race').classList.remove('hidden');
+            } else if (viewName === 'materi') {
+                document.getElementById('view-materi').classList.remove('hidden');
+                renderCustomList();
+                stopRace();
+            }
+        }
+
+        // MULTIPLAYER CREATION & JOINING
+        window.createMultiplayerRoom = async function() {
+            const playerName = document.getElementById('multiplayer-name').value.trim() || 'Player 1';
+            const roomCode = Math.floor(100000 + Math.random() * 900000).toString();
+            currentRoomId = roomCode;
+            isHost = true;
+
+            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomCode);
+            try {
+                await setDoc(roomRef, {
+                    roomCode: roomCode,
+                    hostName: playerName,
+                    guestName: 'Menunggu...',
+                    hostProgress: 0,
+                    guestProgress: 0,
+                    status: 'waiting',
+                    createdAt: Date.now()
+                });
+
+                document.getElementById('display-room-code').innerText = roomCode;
+                document.getElementById('mp-status-badge').innerText = 'MENUNGGU PLAYER 2...';
+                document.getElementById('multiplayer-room-bar').classList.remove('hidden');
+
+                document.getElementById('p1-label').innerHTML = `<i class="fa-solid fa-spider"></i> ${playerName} (KAMU)`;
+                document.getElementById('p2-label').innerHTML = `<i class="fa-solid fa-user-ninja"></i> PLAYER 2`;
+
+                listenToRoom(roomCode);
+                startRace('multiplayer');
+            } catch (err) {
+                console.error("Firestore room error:", err);
+                alert("Gagal membuat room multiplayer. Memulai mode solo.");
+                startRace('soal_txt');
+            }
+        };
+
+        window.joinMultiplayerRoom = async function() {
+            const playerName = document.getElementById('multiplayer-name').value.trim() || 'Player 2';
+            const roomCode = document.getElementById('room-code-input').value.trim();
+            if (!roomCode) {
+                alert("Masukkan 6-digit Kode Room!");
+                return;
+            }
+
+            currentRoomId = roomCode;
+            isHost = false;
+
+            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomCode);
+            try {
+                const snap = await getDoc(roomRef);
+                if (!snap.exists()) {
+                    alert("Kode Room tidak ditemukan!");
+                    return;
+                }
+
+                await updateDoc(roomRef, {
+                    guestName: playerName,
+                    status: 'active'
+                });
+
+                document.getElementById('display-room-code').innerText = roomCode;
+                document.getElementById('mp-status-badge').innerText = 'DIBANDINGKAN REALTIME';
+                document.getElementById('multiplayer-room-bar').classList.remove('hidden');
+
+                document.getElementById('p1-label').innerHTML = `<i class="fa-solid fa-spider"></i> ${playerName} (KAMU)`;
+                document.getElementById('p2-label').innerHTML = `<i class="fa-solid fa-crown text-yellow-400"></i> ${snap.data().hostName}`;
+
+                listenToRoom(roomCode);
+                startRace('multiplayer');
+            } catch (err) {
+                console.error("Join room error:", err);
+                alert("Gagal bergabung ke room.");
+            }
+        };
+
+        function listenToRoom(roomCode) {
+            if (roomUnsubscribe) roomUnsubscribe();
+
+            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomCode);
+            roomUnsubscribe = onSnapshot(roomRef, (snapshot) => {
+                if (!snapshot.exists()) return;
+                const data = snapshot.data();
+
+                if (isHost) {
+                    botProgress = data.guestProgress || 0;
+                    if (data.guestName && data.guestName !== 'Menunggu...') {
+                        document.getElementById('p2-label').innerHTML = `<i class="fa-solid fa-user-ninja"></i> ${data.guestName}`;
+                        document.getElementById('mp-status-badge').innerText = 'BALAPAN BERLANGSUNG!';
+                    }
+                } else {
+                    botProgress = data.hostProgress || 0;
+                    document.getElementById('mp-status-badge').innerText = 'BALAPAN BERLANGSUNG!';
+                }
+
+                updateProgressUI();
+
+                if (data.hostProgress >= 100 || data.guestProgress >= 100) {
+                    const hostWon = data.hostProgress >= 100;
+                    const iWon = isHost ? hostWon : !hostWon;
+                    endRace(iWon);
+                }
+            }, (error) => {
+                console.error("Room listener error:", error);
+            });
+        }
+
+        async function syncMyProgress(progress) {
+            if (currentMode !== 'multiplayer' || !currentRoomId) return;
+            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', currentRoomId);
+            try {
+                if (isHost) {
+                    await updateDoc(roomRef, { hostProgress: progress });
+                } else {
+                    await updateDoc(roomRef, { guestProgress: progress });
+                }
+            } catch (e) {
+                console.log("Sync progress error:", e);
+            }
+        }
+
+        // START RACE
+        window.startRace = function(mode) {
+            currentMode = mode;
+            questionIndex = 0;
+            switchView('race');
+
+            playerProgress = 0;
+            botProgress = 0;
+            score = 0;
+            streak = 0;
+            maxStreak = 0;
+            correctAnswers = 0;
+            totalAttempts = 0;
+            timerSeconds = 0;
+            isGameActive = true;
+
+            const badge = document.getElementById('race-mode-badge');
+            if (mode === 'soal_txt') badge.innerText = 'SOAL INFORMATIKA';
+            else if (mode === 'multiplayer') badge.innerText = 'MULTIPLAYER';
+            else if (mode === 'words') badge.innerText = 'WORD RACER';
+            else if (mode === 'math') badge.innerText = 'MATH RACER';
+
+            if (mode !== 'multiplayer') {
+                document.getElementById('multiplayer-room-bar').classList.add('hidden');
+                document.getElementById('p1-label').innerHTML = `<i class="fa-solid fa-spider"></i> SPIDER-MAN (KAMU)`;
+                document.getElementById('p2-label').innerHTML = `<i class="fa-solid fa-mask"></i> RIVAL (VENOM BOT)`;
+            }
+
+            updateProgressUI();
+            updateStatsUI();
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                const mins = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+                const secs = String(timerSeconds % 60).padStart(2, '0');
+                document.getElementById('race-timer').innerText = `${mins}:${secs}`;
+            }, 1000);
+
+            // Bot behavior in solo mode
+            clearInterval(botInterval);
+            if (currentMode !== 'multiplayer') {
+                botInterval = setInterval(() => {
+                    if (!isGameActive) return;
+                    botProgress += Math.random() * 2.2 + 1.2;
+                    if (botProgress >= 100) {
+                        botProgress = 100;
+                        endRace(false);
+                    }
+                    updateProgressUI();
+                }, 1300);
+            }
+
+            nextQuestion();
+        }
+
+        function stopRace() {
+            isGameActive = false;
+            clearInterval(timerInterval);
+            clearInterval(botInterval);
+            if (roomUnsubscribe) {
+                roomUnsubscribe();
+                roomUnsubscribe = null;
+            }
+        }
+
+        window.leaveRace = function() {
+            stopRace();
+            switchView('menu');
+        }
+
+        window.restartGame = function() {
+            startRace(currentMode);
+        }
+
+        // NEXT QUESTION ENGINE
+        function nextQuestion() {
+            const display = document.getElementById('question-display');
+            const category = document.getElementById('question-category');
+            const textInputContainer = document.getElementById('text-input-container');
+            const mcContainer = document.getElementById('mc-options-container');
+            const input = document.getElementById('answer-input');
+
+            input.value = '';
+
+            if (currentMode === 'soal_txt' || currentMode === 'multiplayer') {
+                category.innerText = `SOAL INFORMATIKA (${questionIndex + 1}/50)`;
+                textInputContainer.classList.add('hidden');
+                mcContainer.classList.remove('hidden');
+
+                const item = soalInformatikaBank[questionIndex % soalInformatikaBank.length];
+                currentQuestion = item;
+                display.innerText = item.question;
+
+                document.getElementById('opt-text-A').innerText = item.options.A;
+                document.getElementById('opt-text-B').innerText = item.options.B;
+                document.getElementById('opt-text-C').innerText = item.options.C;
+                document.getElementById('opt-text-D').innerText = item.options.D;
+                questionIndex++;
+            } else if (currentMode === 'words') {
+                category.innerText = 'MODE: KETIK KATA (WORD RACER)';
+                textInputContainer.classList.remove('hidden');
+                mcContainer.classList.add('hidden');
+
+                const randWord = defaultWords[Math.floor(Math.random() * defaultWords.length)];
+                currentQuestion = { question: randWord, answer: randWord };
+                display.innerText = randWord;
+                input.focus();
+            } else if (currentMode === 'math') {
+                category.innerText = 'MODE: HITUNG MATEMATIKA';
+                textInputContainer.classList.remove('hidden');
+                mcContainer.classList.add('hidden');
+
+                const ops = ['+', '-', '*'];
+                const op = ops[Math.floor(Math.random() * ops.length)];
+                let num1, num2, ans;
+
+                if (op === '+') {
+                    num1 = Math.floor(Math.random() * 50) + 1;
+                    num2 = Math.floor(Math.random() * 50) + 1;
+                    ans = num1 + num2;
+                } else if (op === '-') {
+                    num1 = Math.floor(Math.random() * 50) + 10;
+                    num2 = Math.floor(Math.random() * num1);
+                    ans = num1 - num2;
+                } else {
+                    num1 = Math.floor(Math.random() * 12) + 1;
+                    num2 = Math.floor(Math.random() * 10) + 1;
+                    ans = num1 * num2;
+                }
+
+                currentQuestion = { question: `${num1} ${op === '*' ? '×' : op} ${num2}`, answer: String(ans) };
+                display.innerText = `${num1} ${op === '*' ? '×' : op} ${num2} = ?`;
+                input.focus();
+            }
+        }
+
+        // CHECK ANSWER LOGIC
+        window.checkMultipleChoice = function(selectedOption) {
+            if (!isGameActive || !currentQuestion) return;
+            handleAnswerVerification(selectedOption.toUpperCase() === currentQuestion.answer.toUpperCase());
+        };
+
+        window.checkAnswer = function() {
+            if (!isGameActive || !currentQuestion) return;
+            const userAns = document.getElementById('answer-input').value.trim();
+            handleAnswerVerification(userAns.toLowerCase() === currentQuestion.answer.toLowerCase());
+        };
+
+        function handleAnswerVerification(isCorrect) {
+            const feedback = document.getElementById('feedback-msg');
+            totalAttempts++;
+
+            if (isCorrect) {
+                playSFX('correct');
+                playSFX('web');
+                correctAnswers++;
+                streak++;
+                if (streak > maxStreak) maxStreak = streak;
+
+                score += 10 + (streak * 2);
+                playerProgress += 8; // Boost forward
+
+                feedback.className = "h-6 text-sm font-semibold text-green-400 animate-pulse";
+                feedback.innerText = "✨ BENAR! SPIDER-MAN MELUNCUR!";
+
+                syncMyProgress(playerProgress);
+
+                if (playerProgress >= 100) {
+                    playerProgress = 100;
+                    updateProgressUI();
+                    endRace(true);
+                    return;
+                }
+
+                updateProgressUI();
+                updateStatsUI();
+                nextQuestion();
+            } else {
+                playSFX('wrong');
+                streak = 0;
+                feedback.className = "h-6 text-sm font-semibold text-red-400";
+                feedback.innerText = "❌ JAWABAN KURANG TEPAT!";
+                updateStatsUI();
+            }
+        }
+
+        document.getElementById('answer-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') checkAnswer();
+        });
+
+        // UI UPDATES
+        function updateProgressUI() {
+            const playerBar = document.getElementById('player-progress-bar');
+            const playerAvatar = document.getElementById('player-avatar');
+            const playerText = document.getElementById('player-progress-text');
+
+            const botBar = document.getElementById('bot-progress-bar');
+            const botAvatar = document.getElementById('bot-avatar');
+            const botText = document.getElementById('bot-progress-text');
+
+            const clampedPlayer = Math.min(Math.max(playerProgress, 5), 100);
+            const clampedBot = Math.min(Math.max(botProgress, 5), 100);
+
+            playerBar.style.width = `${clampedPlayer}%`;
+            playerAvatar.style.left = `${clampedPlayer}%`;
+            playerText.innerText = `${Math.floor(playerProgress)}%`;
+
+            botBar.style.width = `${clampedBot}%`;
+            botAvatar.style.left = `${clampedBot}%`;
+            botText.innerText = `${Math.floor(botProgress)}%`;
+        }
+
+        function updateStatsUI() {
+            document.getElementById('race-score').innerText = score;
+            document.getElementById('race-accuracy').innerText = `${totalAttempts > 0 ? Math.round((correctAnswers / totalAttempts) * 100) : 100}%`;
+        }
+
+        function endRace(isWin) {
+            stopRace();
+            const modal = document.getElementById('result-modal');
+            const icon = document.getElementById('modal-icon');
+            const title = document.getElementById('modal-title');
+            const desc = document.getElementById('modal-desc');
+
+            const acc = totalAttempts > 0 ? Math.round((correctAnswers / totalAttempts) * 100) : 100;
+
+            document.getElementById('modal-score').innerText = score;
+            document.getElementById('modal-acc').innerText = `${acc}%`;
+            document.getElementById('modal-time').innerText = `${timerSeconds}s`;
+            document.getElementById('modal-streak').innerText = `${maxStreak}x`;
+
+            if (isWin) {
+                playSFX('win');
+                icon.className = "w-20 h-20 rounded-full mx-auto flex items-center justify-center text-4xl shadow-xl bg-green-500/20 text-green-400 border border-green-500/40";
+                icon.innerHTML = '<i class="fa-solid fa-trophy"></i>';
+                title.innerText = "SPIDER-MAN MENANG!";
+                title.className = "font-orbitron font-black text-3xl text-green-400";
+                desc.innerText = "Hebat! Kamu berhasil menjawab soal informatika dan finish pertama!";
+            } else {
+                playSFX('lose');
+                icon.className = "w-20 h-20 rounded-full mx-auto flex items-center justify-center text-4xl shadow-xl bg-red-500/20 text-red-400 border border-red-500/40";
+                icon.innerHTML = '<i class="fa-solid fa-skull"></i>';
+                title.innerText = "RIVAL UNGGUL!";
+                title.className = "font-orbitron font-black text-3xl text-red-500";
+                desc.innerText = "Rival mendahuluimu ke garis finish. Pelajari lagi materi perangkat keras/lunak!";
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        window.closeModal = function() {
+            document.getElementById('result-modal').classList.add('hidden');
+        }
+
+        // MATERI MANAGER
+        function renderCustomList() {
+            const container = document.getElementById('custom-word-list');
+            const countEl = document.getElementById('custom-count');
+            countEl.innerText = customWordBank.length;
+
+            container.innerHTML = customWordBank.map((item, index) => `
+                <div class="flex items-center justify-between p-3 bg-gray-950 rounded-xl border border-gray-800">
+                    <div class="pr-3">
+                        <span class="font-semibold text-white text-sm block">${escapeHtml(item.question || item.word || '')}</span>
+                        ${item.options ? `<span class="text-xs text-gray-400 block font-mono">A: ${escapeHtml(item.options.A)} | B: ${escapeHtml(item.options.B)}</span>` : ''}
+                        <span class="text-xs text-spidey-cyan font-mono">Kunci Jawaban: ${escapeHtml(item.answer || '')}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.addSingleWord = function() {
+            const wordInput = document.getElementById('new-word-input');
+            const ansInput = document.getElementById('new-answer-input');
+
+            const word = wordInput.value.trim();
+            const answer = ansInput.value.trim();
+
+            if (!word) {
+                alert("Masukkan kata atau pertanyaan!");
+                return;
+            }
+
+            customWordBank.push({ question: word, answer: answer || word });
+            soalInformatikaBank.push({ id: soalInformatikaBank.length + 1, question: word, options: { A: answer || word, B: "Lainnya", C: "N/A", D: "N/A" }, answer: "A" });
+            
+            wordInput.value = '';
+            ansInput.value = '';
+            renderCustomList();
+            playSFX('correct');
+        }
+
+        window.handleFileUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split(/[\r\n]+/);
+                let addedCount = 0;
+
+                lines.forEach(line => {
+                    const trimmed = line.trim();
+                    if (trimmed) {
+                        customWordBank.push({ question: trimmed, answer: 'A' });
+                        addedCount++;
+                    }
+                });
+
+                renderCustomList();
+                playSFX('correct');
+                alert(`Berhasil mengimpor ${addedCount} soal/materi!`);
+            };
+            reader.readAsText(file);
+        }
+
+        function escapeHtml(str) {
+            return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
+        }
+    </script>
+</body>
+</html>
